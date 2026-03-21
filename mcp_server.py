@@ -2,6 +2,8 @@ from pydentic import Field
 
 from mcp.server.fastmcp import FastMCP
 
+from mcp.server.fastmcp.prompts import base
+
 mcp = FastMCP("DocumentMCP", log_level="ERROR")
 
 
@@ -37,9 +39,38 @@ def edit_document(doc_id: str = Field(description="The ID of the document to edi
 
     docs[doc_id] = docs[doc_id].replace(old_str, new_str)
   
-# TODO: Write a resource to return all doc id's
-# TODO: Write a resource to return the contents of a particular doc
-# TODO: Write a prompt to rewrite a doc in markdown format
+@mcp.resource(
+    "docs://documents",
+    mime_type="application/json",
+)
+def list_docs() -> list[str]:
+    return list(docs.keys())
+
+@mcp.resource(
+    "docs://documents/{doc_id}",
+    mime_type="text/plain",
+)
+def fetch_doc(doc_id: str) -> str:
+    if doc_id not in docs:
+        raise ValueError(f"Document with ID '{doc_id}' not found.")
+    return docs[doc_id]
+
+@mcp.prompt(
+    name="format",
+    description="Rewrites the contents of the document in Markdown format."
+)
+def format_document(doc_id: str = Field(description="Id of the document to format.")) -> list[base.Message]:
+    prompt = f"""
+    Your goal is to reformat a document to be written with markdown syntax.
+    The Id of the document to format is:
+    <document_id>
+    {doc_id}
+    </document_id>
+
+    Add in headers, bullet points, and other markdown syntax to make the document easier to read. Do not change the content of the document, only add formatting. Return the reformatted document as a string.
+    Use the "edit_document" tool to make edits to the document. You can call the tool multiple times to make multiple edits. When you are finished, return the final formatted document as a string. 
+    """
+    return [base.Message(prompt)]
 # TODO: Write a prompt to summarize a doc
 
 

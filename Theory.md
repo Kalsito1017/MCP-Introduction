@@ -16,3 +16,7 @@ What is MCP and how does it work?MCP stands for "Multi-Channel Protocol". It is 
 # 3.Workflow
 
 ![Workflow](/Images/Workflow.png)
+
+# 4.Primitives 
+
+![Primitives](/Images/Primitives.png)
